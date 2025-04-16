@@ -42,32 +42,27 @@
 
         textarea {
             resize: vertical;
-            min-height: 200px; /* Doubled from 100px to 200px */
+            min-height: 200px;
         }
 
         .output-section {
             position: relative;
         }
 
-        button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        /* Style for the copy icon */
+        .copy-icon {
+            position: absolute;
+            top: calc(10px + 1rem);
+            right: 10px;
             cursor: pointer;
-            font-size: 16px;
+            width: 24px;
+            height: 24px;
+            fill: #007bff;
+            transition: fill 0.2s;
         }
 
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Style for copy button under output box */
-        .copy-button {
-            margin-top: 10px;
-            width: 100%;
-            max-width: 200px;
+        .copy-icon:hover {
+            fill: #0056b3;
         }
 
         /* Grid for prepend/append inputs */
@@ -77,14 +72,22 @@
             gap: 20px;
         }
 
+        /* Checkbox styling */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-container label {
+            font-weight: normal;
+            margin-bottom: 0;
+        }
+
         /* Responsive design for smaller screens */
         @media (max-width: 600px) {
             body {
                 padding: 10px;
-            }
-
-            button {
-                width: 100%;
             }
 
             .transform-inputs {
@@ -102,7 +105,7 @@
             <textarea id="inputText" placeholder="Enter your text here..."></textarea>
         </div>
 
-        <!-- Input fields for prepend and append strings -->
+        <!-- Input fields for prepend, append, and remove line breaks -->
         <div class="transform-inputs">
             <div>
                 <label for="prependString">Prepend to Each Line:</label>
@@ -112,13 +115,20 @@
                 <label for="appendString">Append to Each Line:</label>
                 <input type="text" id="appendString" placeholder="e.g., ;">
             </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="removeLineBreaks">
+                <label for="removeLineBreaks">Remove Line Breaks</label>
+            </div>
         </div>
 
         <!-- Output text area for modified text -->
         <div class="output-section">
             <label for="outputText">Output Text:</label>
             <textarea id="outputText" readonly></textarea>
-            <button class="copy-button" onclick="copyOutput()">Copy</button>
+            <!-- Copy icon (SVG) -->
+            <svg class="copy-icon" onclick="copyOutput()" viewBox="0 0 24 24">
+                <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
+            </svg>
         </div>
     </div>
 
@@ -127,14 +137,16 @@
         const inputText = document.getElementById('inputText');
         const prependString = document.getElementById('prependString');
         const appendString = document.getElementById('appendString');
+        const removeLineBreaks = document.getElementById('removeLineBreaks');
         const outputText = document.getElementById('outputText');
 
-        // Function to transform text (prepend and append)
+        // Function to transform text (prepend, append, and optional line break removal)
         function transformText() {
             // Get input values
             const text = inputText.value;
             const prepend = prependString.value || ''; // Default to empty string if no prepend provided
             const append = appendString.value || ''; // Default to empty string if no append provided
+            const shouldRemoveLineBreaks = removeLineBreaks.checked;
 
             // Handle empty input
             if (!text.trim()) {
@@ -152,8 +164,10 @@
                 return `${prepend}${line}${append}`;
             });
 
-            // Join lines with original line breaks (preserving input format)
-            const result = transformedLines.join('\n');
+            // Join lines based on removeLineBreaks checkbox
+            const result = shouldRemoveLineBreaks
+                ? transformedLines.filter(line => line.trim()).join('')
+                : transformedLines.join('\n');
 
             // Update output text area
             outputText.value = result;
@@ -179,6 +193,7 @@
         inputText.addEventListener('input', transformText);
         prependString.addEventListener('input', transformText);
         appendString.addEventListener('input', transformText);
+        removeLineBreaks.addEventListener('change', transformText);
 
         // Initial call to set output based on default values
         transformText();
