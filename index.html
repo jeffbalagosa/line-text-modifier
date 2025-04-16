@@ -65,7 +65,7 @@
             fill: #0056b3;
         }
 
-        /* Grid for prepend/append inputs */
+        /* Grid for prepend/append inputs and checkboxes */
         .transform-inputs {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -105,7 +105,7 @@
             <textarea id="inputText" placeholder="Enter your text here..."></textarea>
         </div>
 
-        <!-- Input fields for prepend, append, and remove line breaks -->
+        <!-- Input fields for prepend, append, and checkboxes -->
         <div class="transform-inputs">
             <div>
                 <label for="prependString">Prepend to Each Line:</label>
@@ -118,6 +118,10 @@
             <div class="checkbox-container">
                 <input type="checkbox" id="removeLineBreaks">
                 <label for="removeLineBreaks">Remove Line Breaks</label>
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="trimLines">
+                <label for="trimLines">Trim Whitespace from Lines</label>
             </div>
         </div>
 
@@ -138,15 +142,17 @@
         const prependString = document.getElementById('prependString');
         const appendString = document.getElementById('appendString');
         const removeLineBreaks = document.getElementById('removeLineBreaks');
+        const trimLines = document.getElementById('trimLines');
         const outputText = document.getElementById('outputText');
 
-        // Function to transform text (prepend, append, and optional line break removal)
+        // Function to transform text (prepend, append, trim, and optional line break removal)
         function transformText() {
             // Get input values
             const text = inputText.value;
             const prepend = prependString.value || ''; // Default to empty string if no prepend provided
             const append = appendString.value || ''; // Default to empty string if no append provided
             const shouldRemoveLineBreaks = removeLineBreaks.checked;
+            const shouldTrimLines = trimLines.checked;
 
             // Handle empty input
             if (!text.trim()) {
@@ -159,9 +165,11 @@
 
             // Transform each line
             const transformedLines = lines.map(line => {
-                // Skip empty lines to avoid unnecessary prepend/append
-                if (!line.trim()) return line;
-                return `${prepend}${line}${append}`;
+                // Trim whitespace if checkbox is checked
+                const trimmedLine = shouldTrimLines ? line.trim() : line;
+                // Skip empty lines after trimming to avoid unnecessary prepend/append
+                if (!trimmedLine) return trimmedLine;
+                return `${prepend}${trimmedLine}${append}`;
             });
 
             // Join lines based on removeLineBreaks checkbox
@@ -194,6 +202,7 @@
         prependString.addEventListener('input', transformText);
         appendString.addEventListener('input', transformText);
         removeLineBreaks.addEventListener('change', transformText);
+        trimLines.addEventListener('change', transformText);
 
         // Initial call to set output based on default values
         transformText();
