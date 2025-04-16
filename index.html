@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Text Modifier</title>
+    <style>
+        /* General styling for a clean, responsive layout */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 200px; /* Doubled from 100px to 200px */
+        }
+
+        .output-section {
+            position: relative;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Style for copy button under output box */
+        .copy-button {
+            margin-top: 10px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        /* Grid for prepend/append inputs */
+        .transform-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Responsive design for smaller screens */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .transform-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Line Text Modifier</h1>
+    <div class="container">
+        <!-- Input text area for user text -->
+        <div>
+            <label for="inputText">Input Text:</label>
+            <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+        </div>
+
+        <!-- Input fields for prepend and append strings -->
+        <div class="transform-inputs">
+            <div>
+                <label for="prependString">Prepend to Each Line:</label>
+                <input type="text" id="prependString" placeholder="e.g., > ">
+            </div>
+            <div>
+                <label for="appendString">Append to Each Line:</label>
+                <input type="text" id="appendString" placeholder="e.g., ;">
+            </div>
+        </div>
+
+        <!-- Output text area for modified text -->
+        <div class="output-section">
+            <label for="outputText">Output Text:</label>
+            <textarea id="outputText" readonly></textarea>
+            <button class="copy-button" onclick="copyOutput()">Copy</button>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const inputText = document.getElementById('inputText');
+        const prependString = document.getElementById('prependString');
+        const appendString = document.getElementById('appendString');
+        const outputText = document.getElementById('outputText');
+
+        // Function to transform text (prepend and append)
+        function transformText() {
+            // Get input values
+            const text = inputText.value;
+            const prepend = prependString.value || ''; // Default to empty string if no prepend provided
+            const append = appendString.value || ''; // Default to empty string if no append provided
+
+            // Handle empty input
+            if (!text.trim()) {
+                outputText.value = '';
+                return;
+            }
+
+            // Split text into lines, handling all types of line breaks
+            const lines = text.split(/\r\n|\r|\n/);
+
+            // Transform each line
+            const transformedLines = lines.map(line => {
+                // Skip empty lines to avoid unnecessary prepend/append
+                if (!line.trim()) return line;
+                return `${prepend}${line}${append}`;
+            });
+
+            // Join lines with original line breaks (preserving input format)
+            const result = transformedLines.join('\n');
+
+            // Update output text area
+            outputText.value = result;
+        }
+
+        // Function to copy output text to clipboard
+        function copyOutput() {
+            if (!outputText.value) {
+                alert('Nothing to copy!');
+                return;
+            }
+
+            // Copy text to clipboard
+            navigator.clipboard.writeText(outputText.value)
+                .then(() => alert('Text copied to clipboard!'))
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    alert('Failed to copy text.');
+                });
+        }
+
+        // Add event listeners for real-time updates
+        inputText.addEventListener('input', transformText);
+        prependString.addEventListener('input', transformText);
+        appendString.addEventListener('input', transformText);
+
+        // Initial call to set output based on default values
+        transformText();
+    </script>
+</body>
+</html>
