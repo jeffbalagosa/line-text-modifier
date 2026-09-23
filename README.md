@@ -11,6 +11,7 @@ A simple, browser-based tool for modifying text line by line.
 - **Line Break Removal**: Combine all lines into a single continuous string
 - **Real-time Preview**: See changes immediately as you type
 - **Copy to Clipboard**: Easily copy the modified text with one click
+- **Light and Dark Modes**: Follow your system appearance by default, or use the Dark mode button to choose and remember a theme
 
 ## Usage
 
@@ -24,6 +25,7 @@ A simple, browser-based tool for modifying text line by line.
    - Check "Remove Line Breaks" to join all lines together
 4. The modified text appears in the "Output Text" area in real-time
 5. Click the copy icon to copy the result to your clipboard
+6. Use the Dark mode button beside the heading to switch appearances. Your choice stays in this browser across reloads; without a choice, the page follows system preference changes.
 
 ## Implementation
 
@@ -31,7 +33,7 @@ The tool is built with vanilla HTML, CSS, and JavaScript with no external depend
 
 ## Regression check
 
-Run `node tests/word-whitespace.cjs` to check transformations and live-update handlers. The check uses Node.js built-ins; no packages are required.
+Run `node tests/word-whitespace.cjs` to check transformations, live-update handlers, and theme preference behavior. The check uses Node.js built-ins; no packages are required.
 
 ## Browser Compatibility
 

@@ -4,19 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Line Text Modifier</title>
+    <script>
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+        let chosenTheme = null;
+        try {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light' || savedTheme === 'dark') chosenTheme = savedTheme;
+        } catch (error) {
+            // Storage may be unavailable; manual changes still work for this page.
+        }
+        document.documentElement.dataset.theme = chosenTheme || (systemTheme.matches ? 'dark' : 'light');
+    </script>
     <style>
+        :root {
+            color-scheme: light;
+            --page: #f4f4f9;
+            --field: #fff;
+            --text: #333;
+            --label: #555;
+            --border: #ccc;
+            --accent: #007bff;
+            --accent-hover: #0056b3;
+            --focus: #0056b3;
+        }
+
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+            --page: #001a23;
+            --field: #31493c;
+            --text: #e8f1f2;
+            --label: #e8f1f2;
+            --border: #7a9e7e;
+            --accent: #b3efb2;
+            --accent-hover: #e8f1f2;
+            --focus: #b3efb2;
+        }
+
         /* General styling for a clean, responsive layout */
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #f4f4f9;
+            background-color: var(--page);
+            color: var(--text);
+        }
+
+        .heading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         h1 {
             text-align: center;
-            color: #333;
+            color: var(--text);
+        }
+
+        #themeToggle {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background: var(--field);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 16px;
         }
 
         .container {
@@ -28,16 +82,32 @@
         label {
             font-weight: bold;
             margin-bottom: 5px;
-            color: #555;
+            color: var(--label);
         }
 
         textarea, input[type="text"] {
             width: 100%;
             padding: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border);
             border-radius: 5px;
             font-size: 16px;
             box-sizing: border-box;
+            background: var(--field);
+            color: var(--text);
+        }
+
+        textarea::placeholder, input[type="text"]::placeholder {
+            color: var(--label);
+            opacity: 1;
+        }
+
+        button:focus-visible, textarea:focus-visible, input:focus-visible {
+            outline: 2px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        input[type="checkbox"] {
+            accent-color: var(--accent);
         }
 
         textarea {
@@ -49,6 +119,10 @@
             position: relative;
         }
 
+        #outputText {
+            padding-right: 44px;
+        }
+
         /* Style for the copy icon */
         .copy-icon {
             position: absolute;
@@ -57,12 +131,20 @@
             cursor: pointer;
             width: 24px;
             height: 24px;
-            fill: #007bff;
-            transition: fill 0.2s;
+            padding: 0;
+            border: 0;
+            background: none;
+            color: var(--accent);
+        }
+
+        .copy-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
         }
 
         .copy-icon:hover {
-            fill: #0056b3;
+            color: var(--accent-hover);
         }
 
         /* Grid for transform inputs and checkboxes */
@@ -97,7 +179,10 @@
     </style>
 </head>
 <body>
-    <h1>Line Text Modifier</h1>
+    <header class="heading">
+        <h1>Line Text Modifier</h1>
+        <button id="themeToggle" type="button" aria-pressed="false">Dark mode</button>
+    </header>
     <div class="container">
         <!-- Input text area for user text -->
         <div>
@@ -134,9 +219,11 @@
             <label for="outputText">Output Text:</label>
             <textarea id="outputText" readonly></textarea>
             <!-- Copy icon (SVG) -->
-            <svg class="copy-icon" onclick="copyOutput()" viewBox="0 0 24 24">
-                <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
-            </svg>
+            <button class="copy-icon" type="button" aria-label="Copy output" onclick="copyOutput()">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
+                </svg>
+            </button>
         </div>
     </div>
 
@@ -149,6 +236,26 @@
         const removeLineBreaks = document.getElementById('removeLineBreaks');
         const trimLines = document.getElementById('trimLines');
         const outputText = document.getElementById('outputText');
+        const themeToggle = document.getElementById('themeToggle');
+
+        function setTheme(theme) {
+            document.documentElement.dataset.theme = theme;
+            themeToggle.setAttribute('aria-pressed', String(theme === 'dark'));
+        }
+
+        setTheme(document.documentElement.dataset.theme);
+        systemTheme.addEventListener('change', event => {
+            if (!chosenTheme) setTheme(event.matches ? 'dark' : 'light');
+        });
+        themeToggle.addEventListener('click', () => {
+            chosenTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+            setTheme(chosenTheme);
+            try {
+                localStorage.setItem('theme', chosenTheme);
+            } catch (error) {
+                // Keep the selection for this page when storage is unavailable.
+            }
+        });
 
         // Transform each line, then optionally remove line breaks
         function transformText() {
