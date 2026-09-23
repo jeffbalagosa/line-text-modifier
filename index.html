@@ -65,7 +65,7 @@
             fill: #0056b3;
         }
 
-        /* Grid for prepend/append inputs and checkboxes */
+        /* Grid for transform inputs and checkboxes */
         .transform-inputs {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -105,7 +105,7 @@
             <textarea id="inputText" placeholder="Enter your text here..."></textarea>
         </div>
 
-        <!-- Input fields for prepend, append, and checkboxes -->
+        <!-- Transform inputs and checkboxes -->
         <div class="transform-inputs">
             <div>
                 <label for="prependString">Prepend to Each Line:</label>
@@ -115,13 +115,17 @@
                 <label for="appendString">Append to Each Line:</label>
                 <input type="text" id="appendString" placeholder="e.g., ;">
             </div>
+            <div>
+                <label for="wordSeparator">Replace Word Gaps With (optional):</label>
+                <input type="text" id="wordSeparator" placeholder="Blank keeps spaces/tabs; e.g., -">
+            </div>
             <div class="checkbox-container">
                 <input type="checkbox" id="removeLineBreaks">
                 <label for="removeLineBreaks">Remove Line Breaks</label>
             </div>
             <div class="checkbox-container">
                 <input type="checkbox" id="trimLines">
-                <label for="trimLines">Trim Whitespace from Lines</label>
+                <label for="trimLines">Remove Whitespace at Start and End of Each Line</label>
             </div>
         </div>
 
@@ -141,11 +145,12 @@
         const inputText = document.getElementById('inputText');
         const prependString = document.getElementById('prependString');
         const appendString = document.getElementById('appendString');
+        const wordSeparator = document.getElementById('wordSeparator');
         const removeLineBreaks = document.getElementById('removeLineBreaks');
         const trimLines = document.getElementById('trimLines');
         const outputText = document.getElementById('outputText');
 
-        // Function to transform text (prepend, append, trim, and optional line break removal)
+        // Transform each line, then optionally remove line breaks
         function transformText() {
             // Get input values
             const text = inputText.value;
@@ -153,6 +158,7 @@
             const append = appendString.value || ''; // Default to empty string if no append provided
             const shouldRemoveLineBreaks = removeLineBreaks.checked;
             const shouldTrimLines = trimLines.checked;
+            const separator = wordSeparator.value;
 
             // Handle empty input
             if (!text.trim()) {
@@ -169,7 +175,10 @@
                 const trimmedLine = shouldTrimLines ? line.trim() : line;
                 // Skip empty lines after trimming to avoid unnecessary prepend/append
                 if (!trimmedLine) return trimmedLine;
-                return `${prepend}${trimmedLine}${append}`;
+                const replacedLine = separator
+                    ? trimmedLine.replace(/(\S)[ \t]+(?=\S)/g, (_, left) => left + separator)
+                    : trimmedLine;
+                return `${prepend}${replacedLine}${append}`;
             });
 
             // Join lines based on removeLineBreaks checkbox
@@ -201,6 +210,10 @@
         inputText.addEventListener('input', transformText);
         prependString.addEventListener('input', transformText);
         appendString.addEventListener('input', transformText);
+        wordSeparator.addEventListener('input', () => {
+            wordSeparator.value = Array.from(wordSeparator.value)[0] || '';
+            transformText();
+        });
         removeLineBreaks.addEventListener('change', transformText);
         trimLines.addEventListener('change', transformText);
 
