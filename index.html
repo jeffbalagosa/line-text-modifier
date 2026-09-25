@@ -1,408 +1,486 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Line Text Modifier</title>
     <script>
-        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
-        let chosenTheme = null;
-        try {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light' || savedTheme === 'dark') chosenTheme = savedTheme;
-        } catch (error) {
-            // Storage may be unavailable; manual changes still work for this page.
-        }
-        document.documentElement.dataset.theme = chosenTheme || (systemTheme.matches ? 'dark' : 'light');
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+      let chosenTheme = null;
+      try {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "light" || savedTheme === "dark")
+          chosenTheme = savedTheme;
+      } catch (error) {
+        // Storage may be unavailable; manual changes still work for this page.
+      }
+      document.documentElement.dataset.theme =
+        chosenTheme || (systemTheme.matches ? "dark" : "light");
     </script>
     <style>
-        :root {
-            color-scheme: light;
-            --page: #fdf6e3;
-            --field: #fffbef;
-            --text: #5c6a72;
-            --label: #829181;
-            --border: #d8d3ba;
-            --accent: #3a94c5;
-            --accent-hover: #2d7fa8;
-            --focus: #35a77c;
-        }
+      :root {
+        color-scheme: light;
+        --page: #759eb8;
+        --field: #fffbef;
+        --text: #1c1c1c;
+        --label: #382309;
+        --border: #275d7f;
+        --accent: #27729b;
+        --accent-hover: #105070;
+        --focus: #dfe6eb;
+      }
 
-        :root[data-theme="dark"] {
-            color-scheme: dark;
-            --page: #001a23;
-            --field: #31493c;
-            --text: #e8f1f2;
-            --label: #e8f1f2;
-            --border: #7a9e7e;
-            --accent: #b3efb2;
-            --accent-hover: #e8f1f2;
-            --focus: #b3efb2;
-        }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --page: #001a23;
+        --field: #31493c;
+        --text: #e8f1f2;
+        --label: #e8f1f2;
+        --border: #7a9e7e;
+        --accent: #b3efb2;
+        --accent-hover: #e8f1f2;
+        --focus: #b3efb2;
+      }
 
-        /* General styling for a clean, responsive layout */
+      /* General styling for a clean, responsive layout */
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: var(--page);
+        color: var(--text);
+      }
+
+      .heading {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      h1 {
+        text-align: center;
+        color: var(--text);
+      }
+
+      #themeToggle {
+        position: absolute;
+        right: 0;
+        padding: 8px;
+        border: 0;
+        background: none;
+        cursor: pointer;
+      }
+
+      .theme-switch {
+        position: relative;
+        display: block;
+        width: 52px;
+        height: 28px;
+        border-radius: 14px;
+        background: var(--border);
+        transition: background 0.2s;
+      }
+
+      .theme-thumb {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        display: grid;
+        place-items: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--field);
+        color: var(--text);
+        transition: transform 0.2s;
+      }
+
+      .theme-thumb svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .theme-thumb .moon {
+        display: none;
+      }
+
+      #themeToggle[aria-pressed="true"] .theme-switch {
+        background: var(--accent);
+      }
+
+      #themeToggle[aria-pressed="true"] .theme-thumb {
+        transform: translateX(24px);
+        background: var(--page);
+        color: var(--accent);
+      }
+
+      #themeToggle[aria-pressed="true"] .sun {
+        display: none;
+      }
+
+      #themeToggle[aria-pressed="true"] .moon {
+        display: block;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: var(--label);
+      }
+
+      textarea,
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        font-size: 16px;
+        box-sizing: border-box;
+        background: var(--field);
+        color: var(--text);
+      }
+
+      textarea::placeholder,
+      input[type="text"]::placeholder {
+        color: var(--label);
+        opacity: 1;
+      }
+
+      button:focus-visible,
+      textarea:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      input[type="checkbox"] {
+        accent-color: var(--accent);
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 200px;
+      }
+
+      .output-section {
+        position: relative;
+      }
+
+      #outputText {
+        padding-right: 44px;
+      }
+
+      /* Style for the copy icon */
+      .copy-icon {
+        position: absolute;
+        top: calc(10px + 1rem);
+        right: 10px;
+        cursor: pointer;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--accent);
+      }
+
+      .copy-icon svg {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+      }
+
+      .copy-icon:hover {
+        color: var(--accent-hover);
+      }
+
+      #copyToast {
+        position: fixed;
+        left: 50%;
+        bottom: 20px;
+        z-index: 1;
+        transform: translateX(-50%);
+        padding: 10px 16px;
+        border-radius: 5px;
+        background: var(--text);
+        color: var(--page);
+        box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #copyToast.visible {
+        opacity: 1;
+      }
+
+      /* Grid for transform inputs and checkboxes */
+      .transform-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      /* Checkbox styling */
+      .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .checkbox-container label {
+        font-weight: normal;
+        margin-bottom: 0;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .theme-switch,
+        .theme-thumb {
+          transition: none;
+        }
+      }
+
+      /* Responsive design for smaller screens */
+      @media (max-width: 650px) {
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: var(--page);
-            color: var(--text);
+          padding: 10px;
         }
 
         .heading {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--text);
+          flex-direction: column;
         }
 
         #themeToggle {
-            position: absolute;
-            right: 0;
-            padding: 8px;
-            border: 0;
-            background: none;
-            cursor: pointer;
+          position: static;
+          margin-top: -12px;
+          margin-bottom: 16px;
         }
 
-        .theme-switch {
-            position: relative;
-            display: block;
-            width: 52px;
-            height: 28px;
-            border-radius: 14px;
-            background: var(--border);
-            transition: background 0.2s;
-        }
-
-        .theme-thumb {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            display: grid;
-            place-items: center;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: var(--field);
-            color: var(--text);
-            transition: transform 0.2s;
-        }
-
-        .theme-thumb svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .theme-thumb .moon {
-            display: none;
-        }
-
-        #themeToggle[aria-pressed="true"] .theme-switch {
-            background: var(--accent);
-        }
-
-        #themeToggle[aria-pressed="true"] .theme-thumb {
-            transform: translateX(24px);
-            background: var(--page);
-            color: var(--accent);
-        }
-
-        #themeToggle[aria-pressed="true"] .sun {
-            display: none;
-        }
-
-        #themeToggle[aria-pressed="true"] .moon {
-            display: block;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: var(--label);
-        }
-
-        textarea, input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
-            background: var(--field);
-            color: var(--text);
-        }
-
-        textarea::placeholder, input[type="text"]::placeholder {
-            color: var(--label);
-            opacity: 1;
-        }
-
-        button:focus-visible, textarea:focus-visible, input:focus-visible {
-            outline: 2px solid var(--focus);
-            outline-offset: 2px;
-        }
-
-        input[type="checkbox"] {
-            accent-color: var(--accent);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 200px;
-        }
-
-        .output-section {
-            position: relative;
-        }
-
-        #outputText {
-            padding-right: 44px;
-        }
-
-        /* Style for the copy icon */
-        .copy-icon {
-            position: absolute;
-            top: calc(10px + 1rem);
-            right: 10px;
-            cursor: pointer;
-            width: 24px;
-            height: 24px;
-            padding: 0;
-            border: 0;
-            background: none;
-            color: var(--accent);
-        }
-
-        .copy-icon svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-
-        .copy-icon:hover {
-            color: var(--accent-hover);
-        }
-
-        /* Grid for transform inputs and checkboxes */
         .transform-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+          grid-template-columns: 1fr;
         }
-
-        /* Checkbox styling */
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .checkbox-container label {
-            font-weight: normal;
-            margin-bottom: 0;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .theme-switch, .theme-thumb {
-                transition: none;
-            }
-        }
-
-        /* Responsive design for smaller screens */
-        @media (max-width: 650px) {
-            body {
-                padding: 10px;
-            }
-
-            .heading {
-                flex-direction: column;
-            }
-
-            #themeToggle {
-                position: static;
-                margin-top: -12px;
-                margin-bottom: 16px;
-            }
-
-            .transform-inputs {
-                grid-template-columns: 1fr;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <header class="heading">
-        <h1>Line Text Modifier</h1>
-        <button id="themeToggle" type="button" aria-label="Dark mode" aria-pressed="false">
-            <span class="theme-switch" aria-hidden="true">
-                <span class="theme-thumb">
-                    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                        <circle cx="12" cy="12" r="4"/>
-                        <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>
-                    </svg>
-                    <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/>
-                    </svg>
-                </span>
-            </span>
-        </button>
+      <h1>Line Text Modifier</h1>
+      <button
+        id="themeToggle"
+        type="button"
+        aria-label="Dark mode"
+        aria-pressed="false"
+      >
+        <span class="theme-switch" aria-hidden="true">
+          <span class="theme-thumb">
+            <svg
+              class="sun"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path
+                d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"
+              />
+            </svg>
+            <svg
+              class="moon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z" />
+            </svg>
+          </span>
+        </span>
+      </button>
     </header>
     <div class="container">
-        <!-- Input text area for user text -->
+      <!-- Input text area for user text -->
+      <div>
+        <label for="inputText">Input Text:</label>
+        <textarea
+          id="inputText"
+          placeholder="Enter your text here..."
+        ></textarea>
+      </div>
+
+      <!-- Transform inputs and checkboxes -->
+      <div class="transform-inputs">
+        <div class="checkbox-container">
+          <input type="checkbox" id="removeLineBreaks" />
+          <label for="removeLineBreaks">Remove Line Breaks</label>
+        </div>
+        <div class="checkbox-container">
+          <input type="checkbox" id="trimLines" checked />
+          <label for="trimLines">Trim Leading/Trailing Whitespace</label>
+        </div>
         <div>
-            <label for="inputText">Input Text:</label>
-            <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+          <label for="prependString">Prepend to Each Line:</label>
+          <input type="text" id="prependString" placeholder="e.g., > " />
         </div>
+        <div>
+          <label for="appendString">Append to Each Line:</label>
+          <input type="text" id="appendString" placeholder="e.g., ;" />
+        </div>
+        <div>
+          <label for="wordSeparator">Replace Word Gaps With (optional):</label>
+          <input
+            type="text"
+            id="wordSeparator"
+            placeholder="Blank keeps spaces/tabs; e.g., -"
+          />
+        </div>
+      </div>
 
-        <!-- Transform inputs and checkboxes -->
-        <div class="transform-inputs">
-            <div class="checkbox-container">
-                <input type="checkbox" id="removeLineBreaks">
-                <label for="removeLineBreaks">Remove Line Breaks</label>
-            </div>
-            <div class="checkbox-container">
-                <input type="checkbox" id="trimLines" checked>
-                <label for="trimLines">Trim Leading/Trailing Whitespace</label>
-            </div>
-            <div>
-                <label for="prependString">Prepend to Each Line:</label>
-                <input type="text" id="prependString" placeholder="e.g., > ">
-            </div>
-            <div>
-                <label for="appendString">Append to Each Line:</label>
-                <input type="text" id="appendString" placeholder="e.g., ;">
-            </div>
-            <div>
-                <label for="wordSeparator">Replace Word Gaps With (optional):</label>
-                <input type="text" id="wordSeparator" placeholder="Blank keeps spaces/tabs; e.g., -">
-            </div>
-        </div>
-
-        <!-- Output text area for modified text -->
-        <div class="output-section">
-            <label for="outputText">Output Text:</label>
-            <textarea id="outputText" readonly></textarea>
-            <!-- Copy icon (SVG) -->
-            <button class="copy-icon" type="button" aria-label="Copy output" onclick="copyOutput()">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
-                </svg>
-            </button>
-        </div>
+      <!-- Output text area for modified text -->
+      <div class="output-section">
+        <label for="outputText">Output Text:</label>
+        <textarea id="outputText" readonly></textarea>
+        <!-- Copy icon (SVG) -->
+        <button
+          class="copy-icon"
+          type="button"
+          aria-label="Copy output"
+          onclick="copyOutput()"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"
+            />
+          </svg>
+        </button>
+      </div>
     </div>
+    <div id="copyToast" role="status" aria-live="polite"></div>
 
     <script>
-        // Get DOM elements
-        const inputText = document.getElementById('inputText');
-        const prependString = document.getElementById('prependString');
-        const appendString = document.getElementById('appendString');
-        const wordSeparator = document.getElementById('wordSeparator');
-        const removeLineBreaks = document.getElementById('removeLineBreaks');
-        const trimLines = document.getElementById('trimLines');
-        const outputText = document.getElementById('outputText');
-        const themeToggle = document.getElementById('themeToggle');
+      // Get DOM elements
+      const inputText = document.getElementById("inputText");
+      const prependString = document.getElementById("prependString");
+      const appendString = document.getElementById("appendString");
+      const wordSeparator = document.getElementById("wordSeparator");
+      const removeLineBreaks = document.getElementById("removeLineBreaks");
+      const trimLines = document.getElementById("trimLines");
+      const outputText = document.getElementById("outputText");
+      const themeToggle = document.getElementById("themeToggle");
+      const copyToast = document.getElementById("copyToast");
+      let copyToastTimeout;
 
-        function setTheme(theme) {
-            document.documentElement.dataset.theme = theme;
-            themeToggle.setAttribute('aria-pressed', String(theme === 'dark'));
+      function setTheme(theme) {
+        document.documentElement.dataset.theme = theme;
+        themeToggle.setAttribute("aria-pressed", String(theme === "dark"));
+      }
+
+      setTheme(document.documentElement.dataset.theme);
+      systemTheme.addEventListener("change", (event) => {
+        if (!chosenTheme) setTheme(event.matches ? "dark" : "light");
+      });
+      themeToggle.addEventListener("click", () => {
+        chosenTheme =
+          document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+        setTheme(chosenTheme);
+        try {
+          localStorage.setItem("theme", chosenTheme);
+        } catch (error) {
+          // Keep the selection for this page when storage is unavailable.
+        }
+      });
+
+      // Transform each line, then optionally remove line breaks
+      function transformText() {
+        // Get input values
+        const text = inputText.value;
+        const prepend = prependString.value || ""; // Default to empty string if no prepend provided
+        const append = appendString.value || ""; // Default to empty string if no append provided
+        const shouldRemoveLineBreaks = removeLineBreaks.checked;
+        const shouldTrimLines = trimLines.checked;
+        const separator = wordSeparator.value;
+
+        // Handle empty input
+        if (!text.trim()) {
+          outputText.value = "";
+          return;
         }
 
-        setTheme(document.documentElement.dataset.theme);
-        systemTheme.addEventListener('change', event => {
-            if (!chosenTheme) setTheme(event.matches ? 'dark' : 'light');
+        // Split text into lines, handling all types of line breaks
+        const lines = text.split(/\r\n|\r|\n/);
+
+        // Transform each line
+        const transformedLines = lines.map((line) => {
+          // Trim whitespace if checkbox is checked
+          const trimmedLine = shouldTrimLines ? line.trim() : line;
+          // Skip empty lines after trimming to avoid unnecessary prepend/append
+          if (!trimmedLine) return trimmedLine;
+          const replacedLine = separator
+            ? trimmedLine.replace(
+                /(\S)[ \t]+(?=\S)/g,
+                (_, left) => left + separator,
+              )
+            : trimmedLine;
+          return `${prepend}${replacedLine}${append}`;
         });
-        themeToggle.addEventListener('click', () => {
-            chosenTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-            setTheme(chosenTheme);
-            try {
-                localStorage.setItem('theme', chosenTheme);
-            } catch (error) {
-                // Keep the selection for this page when storage is unavailable.
-            }
-        });
 
-        // Transform each line, then optionally remove line breaks
-        function transformText() {
-            // Get input values
-            const text = inputText.value;
-            const prepend = prependString.value || ''; // Default to empty string if no prepend provided
-            const append = appendString.value || ''; // Default to empty string if no append provided
-            const shouldRemoveLineBreaks = removeLineBreaks.checked;
-            const shouldTrimLines = trimLines.checked;
-            const separator = wordSeparator.value;
+        // Join lines based on removeLineBreaks checkbox
+        const result = shouldRemoveLineBreaks
+          ? transformedLines.filter((line) => line.trim()).join("")
+          : transformedLines.join("\n");
 
-            // Handle empty input
-            if (!text.trim()) {
-                outputText.value = '';
-                return;
-            }
+        // Update output text area
+        outputText.value = result;
+      }
 
-            // Split text into lines, handling all types of line breaks
-            const lines = text.split(/\r\n|\r|\n/);
-
-            // Transform each line
-            const transformedLines = lines.map(line => {
-                // Trim whitespace if checkbox is checked
-                const trimmedLine = shouldTrimLines ? line.trim() : line;
-                // Skip empty lines after trimming to avoid unnecessary prepend/append
-                if (!trimmedLine) return trimmedLine;
-                const replacedLine = separator
-                    ? trimmedLine.replace(/(\S)[ \t]+(?=\S)/g, (_, left) => left + separator)
-                    : trimmedLine;
-                return `${prepend}${replacedLine}${append}`;
-            });
-
-            // Join lines based on removeLineBreaks checkbox
-            const result = shouldRemoveLineBreaks
-                ? transformedLines.filter(line => line.trim()).join('')
-                : transformedLines.join('\n');
-
-            // Update output text area
-            outputText.value = result;
+      // Function to copy output text to clipboard
+      function copyOutput() {
+        if (!outputText.value) {
+          alert("Nothing to copy!");
+          return;
         }
 
-        // Function to copy output text to clipboard
-        function copyOutput() {
-            if (!outputText.value) {
-                alert('Nothing to copy!');
-                return;
-            }
+        // Copy text to clipboard
+        navigator.clipboard
+          .writeText(outputText.value)
+          .then(() => {
+            copyToast.textContent = "Text copied to clipboard!";
+            copyToast.classList.add("visible");
+            clearTimeout(copyToastTimeout);
+            copyToastTimeout = setTimeout(() => {
+              copyToast.classList.remove("visible");
+              copyToast.textContent = "";
+            }, 2000);
+          })
+          .catch((err) => {
+            console.error("Failed to copy text: ", err);
+            alert("Failed to copy text.");
+          });
+      }
 
-            // Copy text to clipboard
-            navigator.clipboard.writeText(outputText.value)
-                .then(() => alert('Text copied to clipboard!'))
-                .catch(err => {
-                    console.error('Failed to copy text: ', err);
-                    alert('Failed to copy text.');
-                });
-        }
-
-        // Add event listeners for real-time updates
-        inputText.addEventListener('input', transformText);
-        prependString.addEventListener('input', transformText);
-        appendString.addEventListener('input', transformText);
-        wordSeparator.addEventListener('input', () => {
-            wordSeparator.value = Array.from(wordSeparator.value)[0] || '';
-            transformText();
-        });
-        removeLineBreaks.addEventListener('change', transformText);
-        trimLines.addEventListener('change', transformText);
-
-        // Initial call to set output based on default values
+      // Add event listeners for real-time updates
+      inputText.addEventListener("input", transformText);
+      prependString.addEventListener("input", transformText);
+      appendString.addEventListener("input", transformText);
+      wordSeparator.addEventListener("input", () => {
+        wordSeparator.value = Array.from(wordSeparator.value)[0] || "";
         transformText();
+      });
+      removeLineBreaks.addEventListener("change", transformText);
+      trimLines.addEventListener("change", transformText);
+
+      // Initial call to set output based on default values
+      transformText();
     </script>
-</body>
+  </body>
 </html>

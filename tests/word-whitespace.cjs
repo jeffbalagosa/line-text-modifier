@@ -10,11 +10,18 @@ assert.equal(scripts.length, 2);
 function loadPage({ prefersDark = false, storage = {}, blocked = false } = {}) {
     const elements = Object.fromEntries([...html.matchAll(/id="([^"]+)"/g)].map(([, id]) => {
         const tag = html.match(new RegExp(`<[^>]*id="${id}"[^>]*>`))?.[0] || '';
+        const classes = new Set();
         return [id, {
             value: '',
+            textContent: '',
             checked: /\bchecked\b/.test(tag),
             attributes: {},
             listeners: {},
+            classList: {
+                add(name) { classes.add(name); },
+                remove(name) { classes.delete(name); },
+                contains(name) { return classes.has(name); },
+            },
             setAttribute(name, value) { this.attributes[name] = value; },
             addEventListener(event, handler) { this.listeners[event] = handler; },
         }];
@@ -29,15 +36,34 @@ function loadPage({ prefersDark = false, storage = {}, blocked = false } = {}) {
         getItem(key) { if (blocked) throw Error('blocked'); return storage[key]; },
         setItem(key, value) { if (blocked) throw Error('blocked'); storage[key] = value; },
     };
+    const clipboardWrites = [];
+    const alerts = [];
+    const clock = {
+        timer: null,
+        setTimeout(handler, delay) { this.timer = { handler, delay }; return 1; },
+        clearTimeout() { this.timer = null; },
+        fire() { const timer = this.timer; this.timer = null; timer.handler(); },
+    };
     const context = {
         document: { documentElement: root, getElementById: id => elements[id] },
         window: { matchMedia: () => media },
         localStorage,
+        navigator: {
+            clipboard: {
+                writeText(value) {
+                    clipboardWrites.push(value);
+                    return { then(handler) { handler(); return { catch() {} }; } };
+                },
+            },
+        },
+        alert: message => alerts.push(message),
+        setTimeout: (handler, delay) => clock.setTimeout(handler, delay),
+        clearTimeout: id => clock.clearTimeout(id),
     };
     runInNewContext(scripts[0], context);
     const beforeRender = root.dataset.theme;
     runInNewContext(scripts[1], context);
-    return { elements, root, media, storage, beforeRender };
+    return { elements, root, media, storage, beforeRender, context, clipboardWrites, alerts, clock };
 }
 
 const { elements } = loadPage();
@@ -116,6 +142,20 @@ const unavailable = loadPage({ prefersDark: false, blocked: true });
 unavailable.elements.themeToggle.listeners.click();
 unavailable.media.change(false);
 assert.equal(unavailable.root.dataset.theme, 'dark');
+
+const copy = loadPage();
+assert.match(html, /<div id="copyToast" role="status" aria-live="polite"><\/div>/);
+assert.equal(copy.elements.copyToast.textContent, '');
+copy.elements.outputText.value = 'copy me';
+copy.context.copyOutput();
+assert.deepEqual(copy.clipboardWrites, ['copy me']);
+assert.deepEqual(copy.alerts, []);
+assert.equal(copy.elements.copyToast.textContent, 'Text copied to clipboard!');
+assert.equal(copy.elements.copyToast.classList.contains('visible'), true);
+assert.equal(copy.clock.timer.delay, 2000);
+copy.clock.fire();
+assert.equal(copy.elements.copyToast.textContent, '');
+assert.equal(copy.elements.copyToast.classList.contains('visible'), false);
 
 // Theme switching must not touch an in-progress transformation.
 update('inputText', 'one two');
