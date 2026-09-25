@@ -8,14 +8,17 @@ assert.equal(scripts.length, 2);
 
 // Minimal DOM stand-in to exercise both inline scripts and their event handlers.
 function loadPage({ prefersDark = false, storage = {}, blocked = false } = {}) {
-    const elements = Object.fromEntries([...html.matchAll(/id="([^"]+)"/g)].map(([, id]) => [id, {
-        value: '',
-        checked: false,
-        attributes: {},
-        listeners: {},
-        setAttribute(name, value) { this.attributes[name] = value; },
-        addEventListener(event, handler) { this.listeners[event] = handler; },
-    }]));
+    const elements = Object.fromEntries([...html.matchAll(/id="([^"]+)"/g)].map(([, id]) => {
+        const tag = html.match(new RegExp(`<[^>]*id="${id}"[^>]*>`))?.[0] || '';
+        return [id, {
+            value: '',
+            checked: /\bchecked\b/.test(tag),
+            attributes: {},
+            listeners: {},
+            setAttribute(name, value) { this.attributes[name] = value; },
+            addEventListener(event, handler) { this.listeners[event] = handler; },
+        }];
+    }));
     const root = { dataset: {} };
     const media = {
         matches: prefersDark,
@@ -39,6 +42,8 @@ function loadPage({ prefersDark = false, storage = {}, blocked = false } = {}) {
 
 const { elements } = loadPage();
 assert.equal(elements.outputText.value, '');
+assert.equal(elements.trimLines.checked, true);
+assert.equal(elements.removeLineBreaks.checked, false);
 assert.match(html, /<label for="wordSeparator">/);
 
 function update(id, value) {

@@ -21,7 +21,7 @@ A simple, browser-based tool for modifying text line by line.
    - Add text to prepend to each line
    - Add text to append to each line
    - Optionally enter a character in "Replace Word Gaps With". It is blank by default, which preserves spaces and tabs. Each run of spaces/tabs between words becomes one chosen character, so `one   two` becomes `one-two` with `-`. Leading/trailing whitespace, line breaks, and prepend/append text are unaffected by this option.
-   - Check "Remove Whitespace at Start and End of Each Line" to remove edge whitespace without changing gaps between words
+   - "Trim Leading/Trailing Whitespace" is checked by default to remove edge whitespace without changing gaps between words; uncheck it to preserve leading and trailing spaces/tabs
    - Check "Remove Line Breaks" to join all lines together
 4. The modified text appears in the "Output Text" area in real-time
 5. Click the copy icon to copy the result to your clipboard
