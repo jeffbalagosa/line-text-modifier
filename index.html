@@ -269,6 +269,14 @@
 
         <!-- Transform inputs and checkboxes -->
         <div class="transform-inputs">
+            <div class="checkbox-container">
+                <input type="checkbox" id="removeLineBreaks">
+                <label for="removeLineBreaks">Remove Line Breaks</label>
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="trimLines">
+                <label for="trimLines">Trim Leading/Trailing Whitespace</label>
+            </div>
             <div>
                 <label for="prependString">Prepend to Each Line:</label>
                 <input type="text" id="prependString" placeholder="e.g., > ">
@@ -280,14 +288,6 @@
             <div>
                 <label for="wordSeparator">Replace Word Gaps With (optional):</label>
                 <input type="text" id="wordSeparator" placeholder="Blank keeps spaces/tabs; e.g., -">
-            </div>
-            <div class="checkbox-container">
-                <input type="checkbox" id="removeLineBreaks">
-                <label for="removeLineBreaks">Remove Line Breaks</label>
-            </div>
-            <div class="checkbox-container">
-                <input type="checkbox" id="trimLines">
-                <label for="trimLines">Remove Whitespace at Start and End of Each Line</label>
             </div>
         </div>
 
