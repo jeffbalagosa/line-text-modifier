@@ -130,6 +130,11 @@
         gap: 20px;
       }
 
+      .container > div:not(.transform-inputs),
+      .transform-inputs > div:not(.checkbox-container) {
+        padding-bottom: 5px;
+      }
+
       label {
         font-weight: bold;
         margin-bottom: 5px;
@@ -138,6 +143,8 @@
 
       textarea,
       input[type="text"] {
+        position: relative;
+        top: 5px;
         width: 100%;
         padding: 10px;
         border: 1px solid var(--border);
@@ -181,7 +188,7 @@
       /* Style for the copy icon */
       .copy-icon {
         position: absolute;
-        top: calc(10px + 1rem);
+        top: calc(15px + 1rem);
         right: 10px;
         cursor: pointer;
         width: 24px;
